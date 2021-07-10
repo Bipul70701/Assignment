@@ -3,6 +3,12 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose=require("mongoose");
 
+const Vonage = require('@vonage/server-sdk');
+const vonage = new Vonage({
+  apiKey: "5fdc35a7",
+  apiSecret: "VLEzQu9Sj0engkpe"
+});
+
 const app=express();
 //app.use(bodyParser.urlencoded({extended : true}));
 
@@ -55,9 +61,8 @@ app.use(bodyParser.urlencoded({
     extended: true
   }));
 
-
-
-
+var verifyRequestId;
+var myData;
   app.post("/register",function(req,res)
   {
     //   var usr=new User({
@@ -75,12 +80,62 @@ app.use(bodyParser.urlencoded({
     //       pincode:req.body.pincode,
     //       education:req.body.education
     //   });
-    var myData = new User(req.body);
-  myData.save();
+     myData = new User(req.body);
+     //myData.save();
+
+    
+    //console.log();
     //   usr.save();
-      console.log(req.body);
-      res.render("otp",{number:req.body.Mobile_Number});
+      //console.log(req.body);
+       //var mn="91"+(req.body.Mobile_Number).toString();
+      vonage.verify.request({
+             number: "918628878093",
+            brand: "Bipul Kumar Sharma"
+        }, (err, result) => {
+              if (err) {
+              console.error(err);
+              } else {
+                verifyRequestId = result.request_id;
+              console.log('request_id', verifyRequestId);
+              console.log('request_id', result.request_id);
+              res.render("otp",{number:req.body.Mobile_Number});
+              res.render("otp",{requestId:result.request_id});
+              }
+      
   });
+});
+
+
+  app.get("/otp",function(req,res)
+{
+   res.redirect("/");
+});
+
+   app.post("/otp",function(req,res)
+   {
+     
+
+        vonage.verify.check({
+          request_id: req.body.requestId,
+          code: req.body.code
+        }, (err, result) => {
+          if (err) {
+            console.error(err);
+            //res.send(500,'showAlert')
+          } else {
+            //console.log(result);
+            myData.save();
+            res.sendFile(__dirname+"/successfully_registered.html");
+          }
+        });
+    });
+    app.post("/successfully_registered",function(req,res){
+      res.sendFile(__dirname+"/login.html");
+    });
+
+
+
+
   app.post("/",function(req,res)
   {
     var e=req.body.username;
