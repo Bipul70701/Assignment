@@ -89,7 +89,7 @@ var myData;
       //console.log(req.body);
        //var mn="91"+(req.body.Mobile_Number).toString();
       vonage.verify.request({
-             number: "918628878093",
+             number: "91"+req.body.Mobile_Number,
             brand: "Bipul Kumar Sharma"
         }, (err, result) => {
               if (err) {
@@ -105,11 +105,6 @@ var myData;
   });
 });
 
-
-  app.get("/otp",function(req,res)
-{
-   res.redirect("/");
-});
 
    app.post("/otp",function(req,res)
    {
